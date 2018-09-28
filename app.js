@@ -42,9 +42,23 @@ var drop = function(ev) {
     dragElement.style.left = secItemPosition.left;
     dropElement.style.top = firstItemPosition.top;
     dropElement.style.left = firstItemPosition.left;
+    resultCalculate();
 }
 var allowDrop = function(ev) {
     ev.preventDefault();
+}
+var resultCalculate  = function() {
+    var slices = document.querySelectorAll('.slices');
+    var result = "";
+    var currentResult = "";
+    var totalBlock = config.columnNo * config.rowNo; 
+    for (let x = 0; x < totalBlock; x++) {
+        result += x.toString();
+    }
+    for (let s of slices) {
+        currentResult += s.getAttribute('data-slice'); 
+    }
+    console.log(result, currentResult);
 }
 var pazzle = function() {
     
