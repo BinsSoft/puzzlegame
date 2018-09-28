@@ -1,0 +1,9 @@
+#pazzle-container {
+    border: 1px solid #CCC;
+    position: relative;
+}
+.slice {
+    /* display: inline-block; */
+    margin: 0;
+    position: absolute;
+}
