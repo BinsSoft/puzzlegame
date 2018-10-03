@@ -1,9 +1,19 @@
+body {
+    margin: 0;
+    padding: 0;
+}
 #pazzle-container {
     border: 1px solid #CCC;
     position: relative;
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: 100%;
+ 
 }
 .slice {
     /* display: inline-block; */
     margin: 0;
     position: absolute;
+    background-repeat: no-repeat;
+    
 }
