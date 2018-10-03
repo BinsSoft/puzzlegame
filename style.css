@@ -2,13 +2,19 @@ body {
     margin: 0;
     padding: 0;
 }
-#pazzle-container {
-    border: 1px solid #CCC;
+#puzzle-container {
     position: relative;
     background-repeat: no-repeat;
     background-position: top;
     background-size: 100%;
+    float: left;
  
+}
+#puzzle-action-container { 
+    float: left;
+}
+#puzzle-action-container .action-heading {
+    text-align: center;
 }
 .slice {
     /* display: inline-block; */
