@@ -3,6 +3,29 @@ body {
     padding: 0;
     font-family: Arial, Helvetica, sans-serif;
 }
+.header {
+    height: 50px;
+    background: #CCC;
+    position: relative;
+}
+#howToPlayBtn {
+    float: right;
+}
+#howToPlayContainer {
+    
+    position: absolute;
+    right: 5px;
+    width: 300px;
+    background: #FFF;
+    box-shadow: 0px 1px 4px #CCC;
+    top: 34px;
+    border-radius: 0 0 5px 5px;
+
+}
+#howToPlayContainer li {
+    padding: 10px;
+    font-size: 14px;
+}
 #puzzle-container {
     position: relative;
     background-repeat: no-repeat;
@@ -71,6 +94,15 @@ body {
 }
 #puzzle-action-container button:disabled {
     background: #CCC!important;
+}
+#puzzle-action-container select.select-category {
+    width: 92%;
+    padding: 5px;
+    border: navajowhite;
+    border-bottom: 1px solid #CCC;
+    background: none;
+    margin-bottom: 10px;
+    outline:  none;
 }
 .slice {
     /* display: inline-block; */

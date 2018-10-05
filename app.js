@@ -4,31 +4,36 @@ var config = {
     actionContainer: document.getElementById('puzzle-action-container'),
     maxWidth: (window.innerWidth <= 768) ? window.innerWidth : ((window.innerWidth*60)/100) ,
     imageList: [
-        'img/img1.jpg',
-        'img/img2.jpg',
-        'img/img3.jpg',
+        'Animale',
+        'Bird',
+        'Bridge',
+        'City',
+        'Foods'
     ],
+    
     mode : {
         easy : {
-            rowNo: 4,
-            columnNo: 4,
+            rowNo: 3,
+            columnNo: 3,
             countdown : 300,
         },
         medium: {
             rowNo: 5,
             columnNo: 5,
-            countdown: 120,
+            countdown: 300,
         },
         hard: {
             rowNo: 6,
             columnNo: 6,
-            countdown: 60,
+            countdown: 300,
         },
     },
+    currentCategory: 'Animale',
     currentMode : 'easy',
     gameStatus : 0,
     helpCount : 10,
     countDown : 0,
+    usedTime : 0,
     remainHelpCount : 10,
     remainCounter : function() {
         return this.remainHelpCount+' remains';
@@ -76,15 +81,34 @@ var Puzzle = {
             puzzleModeContainer.appendChild(modeElement);
         }
         this.actionContainer.appendChild(puzzleModeContainer);
-
+        
         var changePicContainer = document.createElement('div');
         changePicContainer.classList.add('change-pic-container');
+        
+
+        var selectCategory = document.createElement('select');
+        selectCategory.classList.add('select-category');
+        for (var c of this.imageList) {
+            let option = document.createElement('option');
+            option.value = c;
+            option.innerText = c;
+            if (c == this.currentCategory) {
+                option.selected = true;
+            }
+            selectCategory.appendChild(option);
+        }
+        selectCategory.addEventListener('change', (function(event){
+            
+            this.currentCategory = event.target.value;
+            this._loadImage();
+        }).bind(this));
+        changePicContainer.appendChild(selectCategory);
+
         var picChangeBtn = document.createElement('button');
         picChangeBtn.classList.add('action-btn');
         picChangeBtn.innerText = 'Change Picture';
         picChangeBtn.addEventListener('click', this._loadImage.bind(this));
         changePicContainer.appendChild(picChangeBtn);
-
         /* var shuffleBtn = document.createElement('button');
         shuffleBtn.innerText = 'Shuffle';
         shuffleBtn.addEventListener('click', this.setPlayMode.bind(this));
@@ -132,19 +156,30 @@ var Puzzle = {
 
         var resultContainer = document.createElement('div');
         resultContainer.classList.add('result-container');
-        resultContainer.classList.add('hidden');
-        let img = new Image();
-        img.src = 'img/thumbs-up.png';
-        img.width = 100;
-        resultContainer.appendChild(img);
-        let msg = document.createElement('p');
-        msg.innerText = 'Hey, You completed successfully';
-        resultContainer.appendChild(msg);
         this.resultContainer = resultContainer;
-
         this.actionContainer.appendChild(resultContainer);
 
         this._loadImage();
+
+    },
+    setResultMessage : function(status) {
+        
+        this.resultContainer.innerHTML = '';
+        let img = new Image();
+        img.width = 100;
+        this.resultContainer.appendChild(img);
+        let msg = document.createElement('p');
+        if (status === 1) { // won
+            img.src = 'img/thumbs-up.png';
+            msg.innerHTML = 'Yeaaa, you finish in time <br/> You took just <strong>' + this.usedTime +' sec</strong>';
+        } else { // lost
+            img.src = 'img/thumbs-down.png';
+            msg.innerText = 'Opps, times over. You fail';
+        }
+        this.resultContainer.appendChild(msg);
+        setTimeout((function(){
+            this.resultContainer.innerHTML = '';
+        }).bind(this),5000)
 
     },
     setPlayMode : function(modeName) {
@@ -276,33 +311,39 @@ var Puzzle = {
             }
             
         } else { // want to stop
-            this.gameStatus = 0;
-            this.startQuitBtn.innerText = 'Start';
-            this.helpBtn.classList.add('hidden');
-            var btns = Array.prototype.slice.call(document.querySelectorAll('.action-btn'));
-            for (let b of btns) {
-                b.disabled = false;
-            }
-            this.remainHelpCount = this.helpCount;
-            this.helpBtn.querySelector('span').innerText = this.remainCounter();
-            var slices = Array.prototype.slice.call(document.querySelectorAll('.slice'));
-            for (let s of slices) {
-                s.parentElement.removeChild(s);
-            }
-            this.resultContainer.classList.add('hidden');
+            this.resetGame();
         }
         this._setTimer();
     },
+    resetGame : function () {
+        this.gameStatus = 0;
+        this.startQuitBtn.innerText = 'Start';
+        this.helpBtn.classList.add('hidden');
+        var btns = Array.prototype.slice.call(document.querySelectorAll('.action-btn'));
+        for (let b of btns) {
+            b.disabled = false;
+        }
+        this.remainHelpCount = this.helpCount;
+        this.helpBtn.querySelector('span').innerText = this.remainCounter();
+        this.timerText.innerText = '';
+        var slices = Array.prototype.slice.call(document.querySelectorAll('.slice'));
+        for (let s of slices) {
+            s.parentElement.removeChild(s);
+        }
+        //this.resultContainer.classList.add('hidden');  
+    },
     
     randmomImage : function() {
-        var imageIndex = Math.floor(Math.random() * this.imageList.length);
         
-        if (this.currentImage === imageIndex) {
+        var imageIndex = Math.floor(Math.random() * 5);
+        var image = 'img/blocks/'+this.currentCategory.toLowerCase()+'/img'+imageIndex+'.jpg';
+        
+        if (this.currentImage === image) {
             this.randmomImage();
         } else {
-            this.currentImage = imageIndex;
+            this.currentImage = image;
         }
-        return this.imageList[this.currentImage];
+        return this.currentImage;
     },
     _loadImage : function() {
         var image = this.randmomImage();
@@ -337,15 +378,25 @@ var Puzzle = {
         
         if (self.gameStatus === 1) { // start
             var timer = self.mode[self.currentMode].countdown;
+            
             self.timer = setInterval(function () {
                 timer--;
+                self.usedTime++;
+
                 let min = parseInt(timer / 60);
                 let sec = timer;
                 if (min > 0) {
                     sec = timer - min * 60;
                 }
                 self.timerText.innerText = ((min < 10) ? '0' + min : min) + ' : ' + ((sec < 10) ? '0' + sec : sec);
+                if (timer == 0) {
+                    clearInterval(self.timer);
+                    self.resetGame();
+                    self.setResultMessage(0);
+                }
             }, 1000)
+
+            
         } else if (self.gameStatus === 0) { // stop
             self.timerText.innerText = '00 : 00';
             clearInterval(self.timer);
@@ -418,12 +469,8 @@ var Puzzle = {
         if (currentResult === exactResult) {
             var self = this;
             setTimeout(function () {
-                self.resultContainer.classList.remove('hidden');
-                self.startQuitBtn.innerText = 'Start';
-                var btns = Array.prototype.slice.call(document.querySelectorAll('.action-btn'));
-                for (let b of btns) {
-                    b.disabled = true;
-                }
+                self.setResultMessage(1);
+                self.resetGame();
                 clearInterval(self.timer);
             }, 1000)
         }
