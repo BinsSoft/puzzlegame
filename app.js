@@ -1,5 +1,6 @@
 
 var config = {
+    headerContainer: document.querySelector('.header'),
     container: document.getElementById('puzzle-container'),
     actionContainer: document.getElementById('puzzle-action-container'),
     maxWidth: (window.innerWidth <= 768) ? window.innerWidth : ((window.innerWidth*60)/100) ,
@@ -57,6 +58,38 @@ var config = {
 
 var Puzzle = {
     _init : function() {
+
+        var howToPlayBtn = document.createElement('button');
+        howToPlayBtn.setAttribute('id', 'howToPlayBtn');
+        howToPlayBtn.innerText = 'How To Play';
+        
+        this.headerContainer.appendChild(howToPlayBtn);
+
+        var howToPlayContainer = document.createElement('ul');
+        howToPlayContainer.setAttribute('id', 'howToPlayContainer');
+        howToPlayContainer.classList.add('hidden');
+        howToPlayContainer.innerHTML = `<li>Select any game mode <strong>(Easy / Medium / Hard)</strong></li>
+                <li>You can change any category from next dropdown</li>
+                <li>You can change any other picture from next button</li>
+                <li>Start the game by clicking <strong>Start</strong> button</li>
+                <li>After strating the game a new button will open <strong>Want to see actual Picture ?</strong>. This button will help you to see the actual picture. You can  get only 10 chances to check the picture</li>
+                <li>Just solve the puzzle by drug and drop the right puzzle in right place</li>
+                <li>A timer will start when you click on the <strong>Start</strong> button.</li>
+                <li>If you can solve the puzzle within this time, you win </li>
+                <li>Any time you can quit from the game by clicking on <strong>Want to quit</strong> button</li>`;
+        this.headerContainer.appendChild(howToPlayContainer);
+        howToPlayBtn.addEventListener('click', (function (event) {
+            if (howToPlayContainer.classList.value.indexOf('hidden') > -1) {
+                howToPlayContainer.classList.remove('hidden');
+            } else {
+                howToPlayContainer.classList.add('hidden');
+            }
+            event.preventDefault();
+        }).bind(this))
+        document.addEventListener("click", function (event) {
+            if (event.target.closest("#howToPlayContainer") || event.target.closest("#howToPlayBtn")) return;howToPlayContainer.classList.add("hidden");
+        });
+
         var puzzleModeContainer = document.createElement('div');
         puzzleModeContainer.classList.add('puzzle-mode-container');
         for (let pMode in this.mode) {
@@ -179,7 +212,7 @@ var Puzzle = {
         this.resultContainer.appendChild(msg);
         setTimeout((function(){
             this.resultContainer.innerHTML = '';
-        }).bind(this),5000)
+        }).bind(this),10000)
 
     },
     setPlayMode : function(modeName) {
