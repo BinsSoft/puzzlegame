@@ -59,11 +59,21 @@ var config = {
 var Puzzle = {
     _init : function() {
 
+        
+
         var howToPlayBtn = document.createElement('button');
+        howToPlayBtn.classList.add('header-btn');
         howToPlayBtn.setAttribute('id', 'howToPlayBtn');
         howToPlayBtn.innerText = 'How To Play';
-        
         this.headerContainer.appendChild(howToPlayBtn);
+
+        var challengeBtn = document.createElement('button');
+        challengeBtn.innerText = 'Challenge';
+        challengeBtn.classList.add('header-btn');
+        challengeBtn.addEventListener('click', (function(){
+            
+        }).bind(this))
+        this.headerContainer.appendChild(challengeBtn);
 
         var howToPlayContainer = document.createElement('ul');
         howToPlayContainer.setAttribute('id', 'howToPlayContainer');

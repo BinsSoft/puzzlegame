@@ -8,7 +8,7 @@ body {
     background: #262626;
     position: relative;
 }
-#howToPlayBtn {
+.header .header-btn {
     float: right;
     margin-right: 5px;
     cursor: pointer;
