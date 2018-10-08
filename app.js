@@ -17,7 +17,7 @@ var config = {
         easy : {
             rowNo: 3,
             columnNo: 3,
-            countdown : 5,
+            countdown : 300,
         },
         medium: {
             rowNo: 5,
