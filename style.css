@@ -5,7 +5,7 @@ body {
 }
 .header {
     height: 50px;
-    background: #262626;
+    background: #335ea2;
     position: relative;
 }
 .header .header-btn {
@@ -18,6 +18,21 @@ body {
     line-height: 48px;
     color: #FFF;
     font-weight: bold;
+}
+.logo {
+    float: left;
+    width: 20%;
+}
+.logo img {
+    width: 45px;
+}
+.online-container 
+{
+    float: left;
+    width: 55%;
+    line-height: 45px;
+    text-align: center;
+    color: #FFF;
 }
 #howToPlayContainer {
     
@@ -53,7 +68,7 @@ body {
 #puzzle-action-container button {
     padding: 10px;
     text-transform: capitalize;
-    background: #585858;
+    background: #2a4875;
     border: none;
     color: #FFF;
     font-weight: bold;
@@ -90,7 +105,7 @@ body {
 }
 .puzzle-mode-container button.mode-btn.active, 
 #puzzle-action-container button:hover {
-    background: #252525 !important;
+    background: #335ea2 !important;
     cursor: pointer;
 }
 #puzzle-action-container button:disabled {
@@ -159,7 +174,7 @@ body {
 .modal-custom-container .modal-header h3 {
     font-size: 20px;
     float: left;
-    color: #262626;
+    color: #335ea2;
 }
 .modal-custom-container .modal-header .close-modal {
     cursor: pointer;
@@ -171,3 +186,21 @@ body {
 /* .modal-custom-container .modal-content {
     border: none;
 } */
+
+.glow {
+    color: rgba(234, 39, 39, 0.89);
+    -webkit-animation-duration: 1s;
+    -webkit-animation-name: glow;
+    -webkit-animation-direction: alternate;
+    -webkit-animation-iteration-count: infinite;
+    animation-duration: 1s;
+    animation-name: glow;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+
+}
+
+@-webkit-keyframes glow {
+    from { text-shadow: 0 0 0px red; }
+    to { text-shadow: 0 0 20px red; }
+}

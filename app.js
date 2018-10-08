@@ -36,6 +36,7 @@ var config = {
     helpCount : 10,
     countDown : 0,
     usedTime : 0,
+    usedMove : 0,
     remainHelpCount : 10,
     remainCounter : function() {
         return this.remainHelpCount+' remains';
@@ -74,35 +75,9 @@ var Puzzle = {
         } else {
             this.randmomImage();
         }
-
-        var howToPlayBtn = document.createElement('button');
-        howToPlayBtn.classList.add('header-btn');
-        howToPlayBtn.classList.add('modal-btn');
-        howToPlayBtn.setAttribute('id', 'howToPlayBtn');
-        howToPlayBtn.innerText = 'How To Play';
-        this.headerContainer.appendChild(howToPlayBtn);
-
-        var challengeBtn = document.createElement('button');
-        challengeBtn.innerText = 'Challenge';
-        challengeBtn.classList.add('header-btn');
-        challengeBtn.classList.add('modal-btn');
-        challengeBtn.addEventListener('click', (function(){
-            var url = 'http://binssoft.github.io/puzzlegame?q=';
-            url += btoa(JSON.stringify({
-                m: this.currentMode,
-                c: this.currentCategory,
-                i: this.currentImage
-            })); 
-            this.modal('Challenge', `
-                <div class="challenge-container">
-                <input type='text' class='text-challenge' value='`+url+`'/>
-                </div>
-            `);
-            document.querySelector('.text-challenge').addEventListener('click', function() {
-                this.setSelectionRange(0, this.value.length);
-            })
-        }).bind(this))
-        this.headerContainer.appendChild(challengeBtn);
+        
+        this.header();
+        
 
         
         howToPlayBtn.addEventListener('click', (function (event) {
@@ -140,9 +115,10 @@ var Puzzle = {
                     b.classList.remove('active');
                 }
                 document.querySelector('[data-mode="' + pMode + '"]').classList.add('active');
-                
+                this.setPlayMode(this.currentMode);
                 
             }).bind(this));
+            
             puzzleModeContainer.appendChild(modeElement);
         }
         this.actionContainer.appendChild(puzzleModeContainer);
@@ -198,7 +174,8 @@ var Puzzle = {
         helpBtn.innerText = 'Want to see actual Picture ?';
         helpBtn.classList.add('help-btn');
         helpBtn.classList.add('hidden');
-        helpBtn.addEventListener('click', this._helpPuzzleing.bind(this));
+        helpBtn.addEventListener('mousedown', this._helpPuzzleing.bind(this,'show'));
+        helpBtn.addEventListener('mouseup', this._helpPuzzleing.bind(this,'hide'));
         let hepCountText = document.createElement('span');
         hepCountText.innerText = this.remainCounter();
         helpBtn.appendChild(hepCountText);
@@ -213,6 +190,7 @@ var Puzzle = {
 
         var title = document.createElement('h3');
         title.classList.add('action-heading-title');
+        
         title.innerText = '00 : 00';
         this.timerText = title;
         heading.appendChild(title);
@@ -227,6 +205,53 @@ var Puzzle = {
         
         
 
+    },
+    header : function() {
+        var logoContainer  = document.createElement('div');
+        logoContainer.classList.add('logo');
+        let img = new Image;
+        img.src = 'img/logo-128.png';
+        img.width = 45;
+        logoContainer.appendChild(img);
+        this.headerContainer.appendChild(logoContainer);
+
+        var onlineContainer = document.createElement('div');
+        onlineContainer.classList.add('online-container');
+        onlineContainer.innerText = 'Online Players ';
+        var onlineCount = document.createElement('span');
+        onlineCount.innerText = Math.floor(Math.random() * (500 - 470 + 1) + 470); // random number  between 470 to 500 
+        onlineContainer.appendChild(onlineCount);
+        this.headerContainer.appendChild(onlineContainer);
+        
+
+        var howToPlayBtn = document.createElement('button');
+        howToPlayBtn.classList.add('header-btn');
+        howToPlayBtn.classList.add('modal-btn');
+        howToPlayBtn.setAttribute('id', 'howToPlayBtn');
+        howToPlayBtn.innerText = 'How To Play';
+        this.headerContainer.appendChild(howToPlayBtn);
+
+        var challengeBtn = document.createElement('button');
+        challengeBtn.innerText = 'Challenge';
+        challengeBtn.classList.add('header-btn');
+        challengeBtn.classList.add('modal-btn');
+        challengeBtn.addEventListener('click', (function () {
+            var url = window.location.href+'?q=';
+            url += btoa(JSON.stringify({
+                m: this.currentMode,
+                c: this.currentCategory,
+                i: this.currentImage
+            }));
+            this.modal('Challenge', `
+                <div class="challenge-container">
+                <input type='text' class='text-challenge' value='`+ url + `'/>
+                </div>
+            `);
+            document.querySelector('.text-challenge').addEventListener('click', function () {
+                this.setSelectionRange(0, this.value.length);
+            })
+        }).bind(this))
+        this.headerContainer.appendChild(challengeBtn);  
     },
     modal: function(heading, content) {
         this.modalContainer.classList.remove('hidden');
@@ -259,7 +284,7 @@ var Puzzle = {
         let msg = document.createElement('p');
         if (status === 1) { // won
             img.src = 'img/thumbs-up.png';
-            msg.innerHTML = 'Yeaaa, you finish in time <br/> You took just <strong>' + this.usedTime +' sec</strong>';
+            msg.innerHTML = 'Hooray, you finish in time <br/> You take just <strong>' + this.usedTime + ' sec</strong> and use <strong>' + this.usedMove +' moves</strong>';
         } else { // lost
             img.src = 'img/thumbs-down.png';
             msg.innerHTML = 'Opps, times over. <br/><h4>You fail</h4>Better luck next time';
@@ -283,9 +308,6 @@ var Puzzle = {
             }
             resolve();
         }).then(function () {
-
-            
-            new Promise(function(resolve, reject) {
                 let containerWidth = parseInt(_self.container.style.width.replace('px',''));
                 let containerHeight = parseInt(_self.container.style.height.replace('px', ''));
                 var perSliceWidth = (containerWidth / mode.columnNo);
@@ -313,6 +335,7 @@ var Puzzle = {
                     
                     newSlice.style.width = perSliceWidth + "px";
                     newSlice.style.height = perSliceHeight + "px";
+                   
                     newSlice.style.backgroundImage = "url('" + _self.imageConfig.src + "')";
                     newSlice.style.backgroundSize = _self.imageConfig.width + 'px ' + _self.imageConfig.height + 'px';
                     newSlice.setAttribute('data-slice', x);
@@ -324,73 +347,71 @@ var Puzzle = {
                     _self.container.appendChild(newSlice);
                     _self.slices.push(newSlice);
                 }
-                resolve();
-            }).then(function(){
-                var count = 0;
-                var interval = setInterval(function () {
-                    var randomElement = _self.getRandom(_self.slices, 2);
-
-                    var firstItem = {
-                        id: randomElement[0].getAttribute('data-slice'),
-                        position: {
-                            top: randomElement[0].style.top,
-                            left: randomElement[0].style.left,
-                        }
-                    }
-                    var secItem = {
-                        id: randomElement[1].getAttribute('data-slice'),
-                        position: {
-                            top: randomElement[1].style.top,
-                            left: randomElement[1].style.left,
-                        }
-                    }
-                    randomElement[0].style.top = secItem.position.top;
-                    randomElement[0].style.left = secItem.position.left;
-                    randomElement[0].setAttribute('data-slice', secItem.id);
-                    randomElement[1].style.top = firstItem.position.top;
-                    randomElement[1].style.left = firstItem.position.left;
-                    randomElement[1].setAttribute('data-slice', firstItem.id);
-                    count++;
-                    if (count == totalBlock) {
-                        clearInterval(interval);
-                    }
-                }, 50);
-            })
-
+               
             
         })
     },
-    _helpPuzzleing : function() {
-        
-        if (this.helpCount > 0) {
-            var slices = Array.prototype.slice.call(document.querySelectorAll('.slice'));
-            for (let s of slices) {
-                s.classList.add('hidden');
-            }
-            this.remainHelpCount--;
-            let hBtn = this.helpBtn;
-            hBtn.querySelector('span').innerText = this.remainCounter();
-            hBtn.disabled = true;
-            setTimeout(function () {
-                for (let s of slices) {
-                    s.classList.remove('hidden');
+    _puzzling : function() {
+        var count = 0;
+        var _self = this;
+        var mode = _self.mode[_self.currentMode];
+        var totalBlock = mode.columnNo * mode.rowNo;
+        var interval = setInterval(function () {
+            var randomElement = _self.getRandom(_self.slices, 2);
+
+            var firstItem = {
+                id: randomElement[0].getAttribute('data-slice'),
+                position: {
+                    top: randomElement[0].style.top,
+                    left: randomElement[0].style.left,
                 }
-                hBtn.disabled = false;
-            }, 2000);
-        } else {
-
+            }
+            var secItem = {
+                id: randomElement[1].getAttribute('data-slice'),
+                position: {
+                    top: randomElement[1].style.top,
+                    left: randomElement[1].style.left,
+                }
+            }
+            randomElement[0].style.top = secItem.position.top;
+            randomElement[0].style.left = secItem.position.left;
+            randomElement[0].setAttribute('data-slice', secItem.id);
+            randomElement[1].style.top = firstItem.position.top;
+            randomElement[1].style.left = firstItem.position.left;
+            randomElement[1].setAttribute('data-slice', firstItem.id);
+            count++;
+            if (count == totalBlock) {
+                clearInterval(interval);
+            }
+        }, 50);
+    },
+    _helpPuzzleing : function(display) {
+        var slices = Array.prototype.slice.call(document.querySelectorAll('.slice'));
+        if (display === 'show') {
+            if (this.remainHelpCount > 0) {
+                for (let s of slices) {
+                    s.classList.add('hidden');
+                }
+                this.remainHelpCount--;
+                let hBtn = this.helpBtn;
+                hBtn.querySelector('span').innerText = this.remainCounter();
+            } else {
+                this.helpBtn.disabled = true;
+            }
+        } else if (display === 'hide') {
+            for (let s of slices) {
+                s.classList.remove('hidden');
+            }
         }
-        
-        
-
     },
     _startPuzzling : function() {
         if (this.gameStatus === 0) { // want to play
             this.gameStatus = 1;
             this.startQuitBtn.innerText = 'Want to quit';
             this.helpBtn.classList.remove('hidden');
-            this.setPlayMode(this.currentMode);
             
+            this._puzzling();
+
             var btns = Array.prototype.slice.call(document.querySelectorAll('.action-btn'));
             for (let b of btns) {
                 b.disabled = true;
@@ -417,7 +438,6 @@ var Puzzle = {
             s.parentElement.removeChild(s);
         }
     },
-    
     randmomImage : function() {
         
         var imageIndex = Math.floor(Math.random() * 5);
@@ -453,7 +473,7 @@ var Puzzle = {
                 _self.actionContainer.style.width = (window.innerWidth - _self.imageConfig.width - 50)+'px';
             }
 
-            
+            _self.setPlayMode(_self.currentMode);
 
         }
     },
@@ -470,6 +490,11 @@ var Puzzle = {
 
                 let min = parseInt(timer / 60);
                 let sec = timer;
+                if (sec < 60) {
+                    self.timerText.classList.add('glow');
+                } else {
+                    self.timerText.classList.remove('glow');
+                }
                 if (min > 0) {
                     sec = timer - min * 60;
                 }
@@ -538,7 +563,8 @@ var Puzzle = {
                         s.style.border = '1px solid #CCC';
                     }
                 }
-                Puzzle.resultCalculate();
+                _self.usedMove ++ ;
+                _self.resultCalculate();
             })
         }
     },
