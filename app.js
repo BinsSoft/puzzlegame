@@ -3,6 +3,7 @@ var config = {
     headerContainer: document.querySelector('.header'),
     container: document.getElementById('puzzle-container'),
     actionContainer: document.getElementById('puzzle-action-container'),
+    modalContainer: document.getElementById('modal-box'),
     maxWidth: (window.innerWidth <= 768) ? window.innerWidth : ((window.innerWidth*60)/100) ,
     imageList: [
         'Animale',
@@ -16,7 +17,7 @@ var config = {
         easy : {
             rowNo: 3,
             columnNo: 3,
-            countdown : 300,
+            countdown : 5,
         },
         medium: {
             rowNo: 5,
@@ -52,17 +53,31 @@ var config = {
             taken[x] = --len in taken ? taken[len] : len;
         }
         return result;
-    }
+    },
+    getQueryStringValue: function(key) {
+        return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+    }  
 }
 
 
 var Puzzle = {
     _init : function() {
 
-        
+        var queryString = this.getQueryStringValue('q');
+        if (queryString) {
+            var query = atob(queryString);
+            query = JSON.parse(query);
+            this.currentCategory = query.c;
+            this.currentImage = query.i;
+            this.currentMode = query.m;
+            this._loadImage();
+        } else {
+            this.randmomImage();
+        }
 
         var howToPlayBtn = document.createElement('button');
         howToPlayBtn.classList.add('header-btn');
+        howToPlayBtn.classList.add('modal-btn');
         howToPlayBtn.setAttribute('id', 'howToPlayBtn');
         howToPlayBtn.innerText = 'How To Play';
         this.headerContainer.appendChild(howToPlayBtn);
@@ -70,15 +85,30 @@ var Puzzle = {
         var challengeBtn = document.createElement('button');
         challengeBtn.innerText = 'Challenge';
         challengeBtn.classList.add('header-btn');
+        challengeBtn.classList.add('modal-btn');
         challengeBtn.addEventListener('click', (function(){
-            
+            var url = 'http://binssoft.github.io/puzzlegame?q=';
+            url += btoa(JSON.stringify({
+                m: this.currentMode,
+                c: this.currentCategory,
+                i: this.currentImage
+            })); 
+            this.modal('Challenge', `
+                <div class="challenge-container">
+                <input type='text' class='text-challenge' value='`+url+`'/>
+                </div>
+            `);
+            document.querySelector('.text-challenge').addEventListener('click', function() {
+                this.setSelectionRange(0, this.value.length);
+            })
         }).bind(this))
         this.headerContainer.appendChild(challengeBtn);
 
-        var howToPlayContainer = document.createElement('ul');
-        howToPlayContainer.setAttribute('id', 'howToPlayContainer');
-        howToPlayContainer.classList.add('hidden');
-        howToPlayContainer.innerHTML = `<li>Select any game mode <strong>(Easy / Medium / Hard)</strong></li>
+        
+        howToPlayBtn.addEventListener('click', (function (event) {
+            var howToPlayContainer = document.createElement('ul');
+            howToPlayContainer.setAttribute('id', 'howToPlayContainer');
+            howToPlayContainer.innerHTML = `<li>Select any game mode <strong>(Easy / Medium / Hard)</strong></li>
                 <li>You can change any category from next dropdown</li>
                 <li>You can change any other picture from next button</li>
                 <li>Start the game by clicking <strong>Start</strong> button</li>
@@ -87,19 +117,11 @@ var Puzzle = {
                 <li>A timer will start when you click on the <strong>Start</strong> button.</li>
                 <li>If you can solve the puzzle within this time, you win </li>
                 <li>Any time you can quit from the game by clicking on <strong>Want to quit</strong> button</li>`;
-        this.headerContainer.appendChild(howToPlayContainer);
-        howToPlayBtn.addEventListener('click', (function (event) {
-            if (howToPlayContainer.classList.value.indexOf('hidden') > -1) {
-                howToPlayContainer.classList.remove('hidden');
-            } else {
-                howToPlayContainer.classList.add('hidden');
-            }
+
+            this.modal('How To Play', howToPlayContainer);
             event.preventDefault();
         }).bind(this))
-        document.addEventListener("click", function (event) {
-            if (event.target.closest("#howToPlayContainer") || event.target.closest("#howToPlayBtn")) return;howToPlayContainer.classList.add("hidden");
-        });
-
+        howToPlayBtn.click();
         var puzzleModeContainer = document.createElement('div');
         puzzleModeContainer.classList.add('puzzle-mode-container');
         for (let pMode in this.mode) {
@@ -143,14 +165,14 @@ var Puzzle = {
         selectCategory.addEventListener('change', (function(event){
             
             this.currentCategory = event.target.value;
-            this._loadImage();
+            this.randmomImage();
         }).bind(this));
         changePicContainer.appendChild(selectCategory);
 
         var picChangeBtn = document.createElement('button');
         picChangeBtn.classList.add('action-btn');
         picChangeBtn.innerText = 'Change Picture';
-        picChangeBtn.addEventListener('click', this._loadImage.bind(this));
+        picChangeBtn.addEventListener('click', this.randmomImage.bind(this));
         changePicContainer.appendChild(picChangeBtn);
         /* var shuffleBtn = document.createElement('button');
         shuffleBtn.innerText = 'Shuffle';
@@ -202,27 +224,48 @@ var Puzzle = {
         this.resultContainer = resultContainer;
         this.actionContainer.appendChild(resultContainer);
 
-        this._loadImage();
+        
+        
 
+    },
+    modal: function(heading, content) {
+        this.modalContainer.classList.remove('hidden');
+        this.modalContainer.querySelector('.modal-header').querySelector('h3').innerText = heading;
+        this.modalContainer.querySelector('.modal-content').innerHTML = '';
+        if (typeof content === 'string') {
+            this.modalContainer.querySelector('.modal-content').innerHTML  = content;    
+        } else {
+            this.modalContainer.querySelector('.modal-content').appendChild(content);
+        }
+        
+
+        this.modalContainer.querySelector('.close-modal').addEventListener('click', (function (event) {
+            this.modalContainer.classList.add('hidden')
+            event.preventDefault();
+        }).bind(this))
+        document.addEventListener("click", (function (event) {
+            if (event.target.closest(".modal-custom-container") 
+                || event.target.closest(".modal-btn")
+        ) return; this.modalContainer.classList.add("hidden");
+        }).bind(this));
     },
     setResultMessage : function(status) {
         
-        this.resultContainer.innerHTML = '';
+        var messageContent = document.createElement('div');
+        messageContent.classList.add('result-container')
         let img = new Image();
         img.width = 100;
-        this.resultContainer.appendChild(img);
+        messageContent.appendChild(img);
         let msg = document.createElement('p');
         if (status === 1) { // won
             img.src = 'img/thumbs-up.png';
             msg.innerHTML = 'Yeaaa, you finish in time <br/> You took just <strong>' + this.usedTime +' sec</strong>';
         } else { // lost
             img.src = 'img/thumbs-down.png';
-            msg.innerText = 'Opps, times over. You fail';
+            msg.innerHTML = 'Opps, times over. <br/><h4>You fail</h4>Better luck next time';
         }
-        this.resultContainer.appendChild(msg);
-        setTimeout((function(){
-            this.resultContainer.innerHTML = '';
-        }).bind(this),10000)
+        messageContent.appendChild(msg);
+        this.modal('Your Result ', messageContent);
 
     },
     setPlayMode : function(modeName) {
@@ -373,7 +416,6 @@ var Puzzle = {
         for (let s of slices) {
             s.parentElement.removeChild(s);
         }
-        //this.resultContainer.classList.add('hidden');  
     },
     
     randmomImage : function() {
@@ -386,10 +428,10 @@ var Puzzle = {
         } else {
             this.currentImage = image;
         }
-        return this.currentImage;
+        this._loadImage();
     },
     _loadImage : function() {
-        var image = this.randmomImage();
+        var image = this.currentImage;
         var newImage = new Image();
         newImage.src = image;
         var _self = this;
