@@ -114,7 +114,7 @@ body {
 #puzzle-action-container select.select-category {
     width: 92%;
     padding: 5px;
-    border: navajowhite;
+    border: none;
     border-bottom: 1px solid #CCC;
     background: none;
     margin-bottom: 10px;
@@ -125,7 +125,7 @@ body {
     margin: 0;
     position: absolute;
     background-repeat: no-repeat;
-    border: 1px solid #CCC;
+    border: 1px solid #1e1e1e;
 }
 .hidden {
    display: none;
