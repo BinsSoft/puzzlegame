@@ -1,5 +1,6 @@
 
 var config = {
+    application : 'Puzzle Bins',
     headerContainer: document.querySelector('.header'),
     container: document.getElementById('puzzle-container'),
     actionContainer: document.getElementById('puzzle-action-container'),
@@ -32,6 +33,7 @@ var config = {
     },
     currentCategory: 'Animale',
     currentMode : 'easy',
+    currentDrugSlice : '',
     gameStatus : 0,
     helpCount : 10,
     countDown : 0,
@@ -83,15 +85,16 @@ var Puzzle = {
         howToPlayBtn.addEventListener('click', (function (event) {
             var howToPlayContainer = document.createElement('ul');
             howToPlayContainer.setAttribute('id', 'howToPlayContainer');
-            howToPlayContainer.innerHTML = `<li>Select any game mode <strong>(Easy / Medium / Hard)</strong></li>
-                <li>You can change any category from next dropdown</li>
-                <li>You can change any other picture from next button</li>
-                <li>Start the game by clicking <strong>Start</strong> button</li>
-                <li>After strating the game a new button will open <strong>Want to see actual Picture ?</strong>. This button will help you to see the actual picture. You can  get only 10 chances to check the picture</li>
-                <li>Just solve the puzzle by drug and drop the right puzzle in right place</li>
+            howToPlayContainer.innerHTML = `<li>Select any game mode <strong>(Easy / Medium / Hard)</strong>.</li>
+                <li>You can change any category from next dropdown.</li>
+                <li>You can change any other picture from next button.</li>
+                <li>Start the game by clicking <strong>Start</strong> button.</li>
+                <li>After strating the game a new button will open <strong>Want to see actual Picture ?</strong>. This button will help you to see the actual picture. You can  get only 10 chances to check the picture.</li>
+                <li>Press the mouse and hold, untill you release the button, you can see the actual picture.</li>
+                <li>Just solve the puzzle by drug and drop the right puzzle in right place.</li>
                 <li>A timer will start when you click on the <strong>Start</strong> button.</li>
-                <li>If you can solve the puzzle within this time, you win </li>
-                <li>Any time you can quit from the game by clicking on <strong>Want to quit</strong> button</li>`;
+                <li>If you can solve the puzzle within this time, you win. </li>
+                <li>Any time you can quit from the game by clicking on <strong>Want to quit</strong> button.</li>`;
 
             this.modal('How To Play', howToPlayContainer);
             event.preventDefault();
@@ -213,6 +216,10 @@ var Puzzle = {
         img.src = 'img/logo-128.png';
         img.width = 45;
         logoContainer.appendChild(img);
+        let spanTitle = document.createElement('span');
+        spanTitle.classList.add('app-title');
+        spanTitle.innerHTML = this.application.replace(' ','<br/>');
+        logoContainer.appendChild(spanTitle);
         this.headerContainer.appendChild(logoContainer);
 
         var onlineContainer = document.createElement('div');
@@ -329,9 +336,9 @@ var Puzzle = {
                     newSlice.addEventListener('drop', _self.drop.bind(_self));
                     newSlice.addEventListener('dragover', _self.allowDrop.bind(_self));
 
-                    /* newSlice.addEventListener('touchstart', allowDrop, false);
-                    newSlice.addEventListener('touchmove', drag, false);
-                    newSlice.addEventListener('touchend', drop, false); */
+                    newSlice.addEventListener('touchstart', _self.allowDrop.bind(_self), false);
+                    newSlice.addEventListener('touchmove', _self.drag.bind(_self), false);
+                    newSlice.addEventListener('touchend', _self.drop.bind(_self), false);
                     
                     newSlice.style.width = perSliceWidth + "px";
                     newSlice.style.height = perSliceHeight + "px";
@@ -520,7 +527,8 @@ var Puzzle = {
     },
     drag : function (event) {
         if (this.gameStatus == 1) {
-            event.dataTransfer.setData("text", event.target.getAttribute('data-slice'));
+            this.currentDrugSlice = event.target.getAttribute('data-slice');
+            //event.dataTransfer.setData("text", event.target.getAttribute('data-slice'));
         }
     },
     drop : function (ev) {
@@ -528,7 +536,7 @@ var Puzzle = {
         ev.preventDefault();
         var _self = this;
         if (this.gameStatus == 1) {
-            var data = ev.dataTransfer.getData("text");
+            var data = this.currentDrugSlice;
             var dragElement = document.querySelector("[data-slice='" + data + "']");
             var dropElement = ev.target;
             new Promise(function (resolve, reject) {

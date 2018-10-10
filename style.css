@@ -25,6 +25,13 @@ body {
 }
 .logo img {
     width: 45px;
+    float: left;
+}
+.logo .app-title {
+    float: left;
+    margin: 6px;
+    color: #FFF;
+    font-weight: bold;
 }
 .online-container 
 {
